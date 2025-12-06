@@ -1,5 +1,7 @@
 syntax = "proto3";
 
+option go_package = "github.com/siddharth-roy27/distributed-kv-store/proto;kv";
+
 package kv;
 
 service KV {
