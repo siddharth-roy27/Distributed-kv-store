@@ -2,16 +2,18 @@ package main
 
 import (
     "context"
+    "flag"
     "log"
-    "time"
 
+    pb "github.com/siddharth-roy27/distributed-kv-store/proto/kv"
     "google.golang.org/grpc"
-    pb "github.com/siddharth-roy27/distributed-kv-store/proto"
 )
 
 func main() {
-    // Connect to the KV server
-    conn, err := grpc.Dial("localhost:50051", grpc.WithInsecure())
+    target := flag.String("target", "localhost:50051", "KV gRPC server address")
+    flag.Parse()
+
+    conn, err := grpc.Dial(*target, grpc.WithInsecure())
     if err != nil {
         log.Fatalf("failed to connect: %v", err)
     }
@@ -19,7 +21,7 @@ func main() {
 
     client := pb.NewKVClient(conn)
 
-    // Example: Set a key-value pair
+    // Test Set
     setResp, err := client.Set(context.Background(), &pb.SetRequest{
         Key:   "name",
         Value: "Siddharth",
@@ -29,20 +31,12 @@ func main() {
     }
     log.Printf("Set Success: %v", setResp.Success)
 
-    // Wait a bit
-    time.Sleep(1 * time.Second)
-
-    // Example: Get the value for a key
+    // Test Get
     getResp, err := client.Get(context.Background(), &pb.GetRequest{
         Key: "name",
     })
     if err != nil {
         log.Fatalf("Get RPC failed: %v", err)
     }
-
-    if getResp.Found {
-        log.Printf("Get Response: key=%s, value=%s", "name", getResp.Value)
-    } else {
-        log.Printf("Key not found")
-    }
+    log.Printf("Get Response: key=%s, value=%s, found=%v", "name", getResp.Value, getResp.Found)
 }

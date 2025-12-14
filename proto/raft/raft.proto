@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+option go_package = "github.com/siddharth-roy27/distributed-kv-store/proto;raftpb";
+
+package raftpb;
+
+// Log entry used in AppendEntries
+message LogEntry {
+  int32 term = 1;
+  string command = 2; // we'll store commands as JSON/strings for now
+}
+
+// RequestVote RPC
+message RequestVoteArgs {
+  int32 term = 1;
+  string candidate_id = 2;
+  int32 last_log_index = 3;
+  int32 last_log_term = 4;
+}
+message RequestVoteReply {
+  int32 term = 1;
+  bool vote_granted = 2;
+}
+
+// AppendEntries RPC (also used for heartbeat)
+message AppendEntriesArgs {
+  int32 term = 1;
+  string leader_id = 2;
+  int32 prev_log_index = 3;
+  int32 prev_log_term = 4;
+  repeated LogEntry entries = 5;
+  int32 leader_commit = 6;
+}
+message AppendEntriesReply {
+  int32 term = 1;
+  bool success = 2;
+}
+
+// Raft RPC service
+service Raft {
+  rpc RequestVote(RequestVoteArgs) returns (RequestVoteReply);
+  rpc AppendEntries(AppendEntriesArgs) returns (AppendEntriesReply);
+}
